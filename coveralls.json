@@ -1,0 +1,10 @@
+{
+    "skip_files": [
+      "test/",
+      "lib/finance_app.ex",
+      "lib/finance_app/repo.ex",
+      "lib/finance_app/schema.ex",
+      "lib/finance_app_web/endpoint.ex",
+      "lib/finance_app_web/telemetry.ex"
+    ]
+  }
