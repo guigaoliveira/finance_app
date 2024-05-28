@@ -43,7 +43,7 @@ defmodule FinanceAppWeb.OperationController do
   defp render_not_found(conn) do
     conn
     |> put_status(:not_found)
-    |> json(%{error: "Conta não encontrada"})
+    |> json(%{error: "Conta não encontrada."})
   end
 
   defp render_validation_error(conn) do

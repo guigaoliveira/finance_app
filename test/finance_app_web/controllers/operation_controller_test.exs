@@ -86,7 +86,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       conn = post(conn, "/transacao", transaction_params)
 
       assert response = json_response(conn, 404)
-      assert response["error"] == "Conta não encontrada"
+      assert response["error"] == "Conta não encontrada."
     end
 
     test "returns error with invalid params", %{conn: conn} do
