@@ -7,44 +7,47 @@ defmodule FinanceAppWeb.AccountController do
   alias FinanceAppWeb.Validators.AccountCreateValidator
   alias FinanceAppWeb.Validators.AccountShowValidator
 
-  @spec show(conn :: Plug.Conn.t(), params :: map()) :: Plug.Conn.t()
+  @doc """
+  Create a new account.
+  """
   def create(conn, params) do
     case AccountCreateValidator.validate(params) do
-      {:ok, _} ->
-        %{"numero_conta" => account_number, "saldo" => balance} = params
-        new_params = %{account_number: account_number, balance: balance}
-
-        new_params
-        |> Accounts.create_account()
-        |> render_create_result(conn)
+      {:ok, validated_params} ->
+        create_account(conn, validated_params)
 
       {:error, _} ->
-        render_create_result({:error, :validation_error}, conn)
+        render_validation_error(conn)
     end
   end
 
-  @spec show(conn :: Plug.Conn.t(), params :: map()) :: Plug.Conn.t()
+  @doc """
+  Show account details by account number.
+  """
   def show(conn, params) do
     case AccountShowValidator.validate(params) do
-      {:ok, _} ->
-        %{"numero_conta" => account_number} = params
-
-        account_number
-        |> Accounts.get_account_by_number()
-        |> render_show_result(conn)
+      {:ok, validated_params} ->
+        get_account_and_render(conn, validated_params)
 
       {:error, _} ->
-        render_show_result({:error, :validation_error}, conn)
+        render_validation_error(conn)
     end
   end
 
-  defp render_create_result({:ok, account}, conn), do: render_created(conn, account)
-  defp render_create_result({:error, :validation_error}, conn), do: handle_validation_error(conn)
-  defp render_create_result({:error, _}, conn), do: handle_generic_error(conn)
+  defp create_account(conn, %{"numero_conta" => account_number, "saldo" => balance}) do
+    new_params = %{account_number: account_number, balance: balance}
 
-  defp render_show_result({:ok, account}, conn), do: render_ok(conn, account)
-  defp render_show_result({:error, :account_not_found}, conn), do: render_not_found(conn)
-  defp render_show_result({:error, :validation_error}, conn), do: handle_validation_error(conn)
+    case Accounts.create_account(new_params) do
+      {:ok, account} -> render_created(conn, account)
+      {:error, _} -> handle_generic_error(conn)
+    end
+  end
+
+  defp get_account_and_render(conn, %{"numero_conta" => account_number}) do
+    case Accounts.get_account_by_number(account_number) do
+      {:ok, account} -> render_ok(conn, account)
+      {:error, :account_not_found} -> render_not_found(conn)
+    end
+  end
 
   defp render_created(conn, %Account{} = account) do
     conn
@@ -63,10 +66,10 @@ defmodule FinanceAppWeb.AccountController do
   defp render_not_found(conn) do
     conn
     |> put_status(:not_found)
-    |> json(%{error: "Conta não encontrada"})
+    |> json(%{error: "Conta não encontrada."})
   end
 
-  defp handle_validation_error(conn) do
+  defp render_validation_error(conn) do
     conn
     |> put_status(:unprocessable_entity)
     |> json(%{error: "Dados inválidos, verifique os dados enviados."})

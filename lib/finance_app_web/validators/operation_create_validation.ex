@@ -26,7 +26,7 @@ defmodule FinanceAppWeb.Validators.OperationCreateValidator do
   @spec validate(map()) :: {:ok, map()} | {:error, Ecto.Changeset.t()}
   def validate(params) do
     case changeset(params) do
-      %Ecto.Changeset{valid?: true} -> {:ok, params}
+      %Ecto.Changeset{valid?: true} = changeset -> {:ok, changeset.changes}
       %Ecto.Changeset{} = changeset -> {:error, changeset}
     end
   end

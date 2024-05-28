@@ -5,35 +5,33 @@ defmodule FinanceAppWeb.OperationController do
   alias FinanceAppWeb.OperationView
   alias FinanceAppWeb.Validators.OperationCreateValidator
 
+  @doc """
+  Create a new operation.
+  """
   @spec create(conn :: Plug.Conn.t(), params :: map()) :: Plug.Conn.t()
   def create(conn, params) do
     case OperationCreateValidator.validate(params) do
-      {:ok, _} ->
-        %{
-          "numero_conta" => account_number,
-          "valor" => amount,
-          "forma_pagamento" => transaction_type
-        } = params
-
-        new_params = %{
-          customer_account_number: account_number,
-          amount: Decimal.new(to_string(amount)),
-          transaction_type: transaction_type
-        }
-
-        new_params
-        |> Processor.process_operation()
-        |> render_create_result(conn)
+      {:ok, validated_params} ->
+        process_operation(conn, validated_params)
 
       {:error, _} ->
-        render_create_result({:error, :validation_error}, conn)
+        render_validation_error(conn)
     end
   end
 
-  defp render_create_result({:ok, account}, conn), do: render_created(conn, account)
-  defp render_create_result({:error, :account_not_found}, conn), do: render_not_found(conn)
-  defp render_create_result({:error, :validation_error}, conn), do: handle_validation_error(conn)
-  defp render_create_result({:error, _}, conn), do: handle_generic_error(conn)
+  defp process_operation(conn, params) do
+    new_params = %{
+      customer_account_number: params.numero_conta,
+      amount: params.valor,
+      transaction_type: params.forma_pagamento
+    }
+
+    case Processor.process_operation(new_params) do
+      {:ok, account} -> render_created(conn, account)
+      {:error, :account_not_found} -> render_not_found(conn)
+      {:error, _} -> handle_generic_error(conn)
+    end
+  end
 
   defp render_created(conn, account) do
     conn
@@ -48,7 +46,7 @@ defmodule FinanceAppWeb.OperationController do
     |> json(%{error: "Conta não encontrada"})
   end
 
-  defp handle_validation_error(conn) do
+  defp render_validation_error(conn) do
     conn
     |> put_status(:unprocessable_entity)
     |> json(%{error: "Dados inválidos, verifique os dados enviados."})

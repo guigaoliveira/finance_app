@@ -45,7 +45,7 @@ defmodule FinanceAppWeb.AccountControllerTest do
 
       assert response = json_response(conn, 404)
 
-      assert response["error"] == "Conta não encontrada"
+      assert response["error"] == "Conta não encontrada."
     end
 
     test "returns when account number is not number", %{conn: conn} do
