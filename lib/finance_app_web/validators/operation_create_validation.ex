@@ -21,6 +21,9 @@ defmodule FinanceAppWeb.Validators.OperationCreateValidator do
       greater_than: 0,
       message: "must be a non-negative number"
     )
+    |> validate_inclusion(:forma_pagamento, ["D", "P", "C"],
+      message: "must be one of 'D', 'P', or 'C'"
+    )
   end
 
   @spec validate(map()) :: {:ok, map()} | {:error, Ecto.Changeset.t()}
