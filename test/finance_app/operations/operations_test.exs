@@ -106,7 +106,7 @@ defmodule FinanceApp.OperationsTest do
         amount: Decimal.new(amount + 10_000)
       }
 
-      assert {:error, :insufficient_balance} = Operations.process_operation(operation)
+      assert {:error, :insufficient_funds} = Operations.process_operation(operation)
 
       assert Decimal.equal?(to_account.balance, Decimal.new(to_account_balance))
       assert Decimal.equal?(from_account.balance, Decimal.new(from_account_balance))

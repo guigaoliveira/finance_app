@@ -50,7 +50,7 @@ defmodule FinanceApp.Operations do
     if Decimal.compare(account.balance, amount) != :lt do
       :ok
     else
-      {:error, :insufficient_balance}
+      {:error, :insufficient_funds}
     end
   end
 

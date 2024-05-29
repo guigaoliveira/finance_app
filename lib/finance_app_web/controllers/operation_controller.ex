@@ -29,6 +29,7 @@ defmodule FinanceAppWeb.OperationController do
     case Processor.process_operation(new_params) do
       {:ok, account} -> render_created(conn, account)
       {:error, :account_not_found} -> render_not_found(conn)
+      {:error, :insufficient_funds} -> render_insufficient_funds(conn)
       {:error, _} -> handle_generic_error(conn)
     end
   end
@@ -38,6 +39,12 @@ defmodule FinanceAppWeb.OperationController do
     |> put_status(:created)
     |> put_view(OperationView)
     |> render("show.json", account: account)
+  end
+
+  defp render_insufficient_funds(conn) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{error: "Fundos insuficientes para realizar a operação."})
   end
 
   defp render_not_found(conn) do

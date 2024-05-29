@@ -10,7 +10,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       amount = 10
       transaction_type = "P"
 
-      transaction_params = %{
+      operation_params = %{
         "numero_conta" => from_account_number,
         "valor" => amount,
         "forma_pagamento" => transaction_type
@@ -19,7 +19,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       insert(:account, %{account_number: 1, balance: 100_000_000})
       insert(:account, %{account_number: from_account_number, balance: from_account_balance})
 
-      conn = post(conn, "/transacao", transaction_params)
+      conn = post(conn, "/transacao", operation_params)
 
       assert response = json_response(conn, 201)
       assert response["numero_conta"] == from_account_number
@@ -32,7 +32,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       amount = 10
       transaction_type = "D"
 
-      transaction_params = %{
+      operation_params = %{
         "numero_conta" => from_account_number,
         "valor" => amount,
         "forma_pagamento" => transaction_type
@@ -41,7 +41,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       insert(:account, %{account_number: 1, balance: 100_000_000})
       insert(:account, %{account_number: from_account_number, balance: from_account_balance})
 
-      conn = post(conn, "/transacao", transaction_params)
+      conn = post(conn, "/transacao", operation_params)
 
       assert response = json_response(conn, 201)
       assert response["numero_conta"] == from_account_number
@@ -54,7 +54,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       amount = 10
       transaction_type = "C"
 
-      transaction_params = %{
+      operation_params = %{
         "numero_conta" => to_account_number,
         "valor" => amount,
         "forma_pagamento" => transaction_type
@@ -63,7 +63,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       insert(:account, %{account_number: 1, balance: 100_000_000})
       insert(:account, %{account_number: to_account_number, balance: to_account_balance})
 
-      conn = post(conn, "/transacao", transaction_params)
+      conn = post(conn, "/transacao", operation_params)
 
       assert response = json_response(conn, 201)
       assert response["numero_conta"] == to_account_number
@@ -75,7 +75,7 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       amount = 10
       transaction_type = "C"
 
-      transaction_params = %{
+      operation_params = %{
         "numero_conta" => to_account_number,
         "valor" => amount,
         "forma_pagamento" => transaction_type
@@ -83,13 +83,13 @@ defmodule FinanceAppWeb.OperationsControllerTest do
 
       insert(:account, %{account_number: 1, balance: 100_000_000})
 
-      conn = post(conn, "/transacao", transaction_params)
+      conn = post(conn, "/transacao", operation_params)
 
       assert response = json_response(conn, 404)
       assert response["error"] == "Conta não encontrada."
     end
 
-    test "returns error with invalid params", %{conn: conn} do
+    test "returns validation error with invalid params", %{conn: conn} do
       invalid_params = %{saldo: "non exist"}
 
       conn = post(conn, "/transacao", invalid_params)
@@ -97,6 +97,28 @@ defmodule FinanceAppWeb.OperationsControllerTest do
       assert response = json_response(conn, 422)
 
       assert response["error"] == "Dados inválidos, verifique os dados enviados."
+    end
+
+    test "returns insufficient funds error with invalid params", %{conn: conn} do
+      from_account_number = 2
+      from_account_balance = 1000
+      amount = 10000
+      transaction_type = "D"
+
+      operation_params = %{
+        "numero_conta" => from_account_number,
+        "valor" => amount,
+        "forma_pagamento" => transaction_type
+      }
+
+      insert(:account, %{account_number: 1, balance: 100_000_000})
+      insert(:account, %{account_number: from_account_number, balance: from_account_balance})
+
+      conn = post(conn, "/transacao", operation_params)
+
+      assert response = json_response(conn, 422)
+
+      assert response["error"] == "Fundos insuficientes para realizar a operação."
     end
   end
 end
